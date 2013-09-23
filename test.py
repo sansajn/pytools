@@ -11,3 +11,5 @@ def complex_return():
 def simple_function():
 	print('Hello from python')
 
+def call_integer_func(n):
+	print('arg:%d' % n)
