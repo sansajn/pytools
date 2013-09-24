@@ -1,16 +1,20 @@
 #include <Python.h>
+#include <string>
+#include <vector>
 #include <iostream>
 #include "dump.hpp"
 
+using std::string;
+using std::vector;
 using std::cout;
 
 
 // tuple low level manipulators
 template <typename T>
-void set_item(PyObject * tuple, size_t pos, T val);
+void set_item(PyObject * tuple, size_t pos, T const & val);
 
 template <>
-void set_item<long>(PyObject * tuple, size_t pos, long val)
+void set_item<long>(PyObject * tuple, size_t pos, long const & val)
 {
 	assert(PyTuple_CheckExact(tuple) &&
 		"logic-error: not created as a tuple object");
@@ -25,7 +29,7 @@ void set_item<long>(PyObject * tuple, size_t pos, long val)
 }
 
 template <>
-void set_item<int>(PyObject * tuple, size_t pos, int val)
+void set_item<int>(PyObject * tuple, size_t pos, int const & val)
 {
 	assert(PyTuple_CheckExact(tuple) &&
 		"logic-error: not created as a tuple object");
@@ -36,11 +40,11 @@ void set_item<int>(PyObject * tuple, size_t pos, int val)
 
 	assert(arg && "logic-error: nepodarila sa konverzia na python objekt");
 
-	PyTuple_SetItem(tuple, pos, arg);  // arg nemusim uvolnovat, lebo SetItem() spravi tuple vlastnikom
+	PyTuple_SetItem(tuple, pos, arg);
 }
 
 template <>
-void set_item<double>(PyObject * tuple, size_t pos, double val)
+void set_item<double>(PyObject * tuple, size_t pos, double const & val)
 {
 	assert(PyTuple_CheckExact(tuple) &&
 		"logic-error: not created as a tuple object");
@@ -53,6 +57,76 @@ void set_item<double>(PyObject * tuple, size_t pos, double val)
 
 	PyTuple_SetItem(tuple, pos, arg);
 }
+
+template <>
+void set_item<float>(PyObject * tuple, size_t pos, float const & val)
+{
+	assert(PyTuple_CheckExact(tuple) &&
+		"logic-error: not created as a tuple object");
+
+	assert(pos < PyTuple_Size(tuple) && "logic-error: out of tuple range");
+
+	PyObject * arg = PyFloat_FromDouble(val);
+
+	assert(arg && "logic-error: nepodarila sa konverzia na python objekt");
+
+	PyTuple_SetItem(tuple, pos, arg);
+}
+
+template <>
+void set_item<string>(PyObject * tuple, size_t pos, string const & val)
+{
+	assert(PyTuple_CheckExact(tuple) &&
+		"logic-error: not created as a tuple object");
+
+	assert(pos < PyTuple_Size(tuple) && "logic-error: out of tuple range");
+
+	PyObject * arg = PyUnicode_DecodeUTF8(val.c_str(), val.size(), NULL);
+
+	assert(arg && "logic-error: nepodarila sa konverzia na python objekt");
+
+	PyTuple_SetItem(tuple, pos, arg);
+}
+
+// pretazenie pre c-stringy
+void set_item(PyObject * tuple, size_t pos, char * val)
+{
+	assert(PyTuple_CheckExact(tuple) &&
+		"logic-error: not created as a tuple object");
+
+	assert(pos < PyTuple_Size(tuple) && "logic-error: out of tuple range");
+
+	PyObject * arg = PyUnicode_DecodeUTF8(val, strlen(val), NULL);
+
+	assert(arg && "logic-error: nepodarila sa konverzia na python objekt");
+
+	PyTuple_SetItem(tuple, pos, arg);
+}
+
+void set_item(PyObject * tuple, size_t pos, char const * val)
+{
+	assert(PyTuple_CheckExact(tuple) &&
+		"logic-error: not created as a tuple object");
+
+	assert(pos < PyTuple_Size(tuple) && "logic-error: out of tuple range");
+
+	PyObject * arg = PyUnicode_DecodeUTF8(val, strlen(val), NULL);
+
+	assert(arg && "logic-error: nepodarila sa konverzia na python objekt");
+
+	PyTuple_SetItem(tuple, pos, arg);
+}
+
+// toto je overloading (podpora pre vektory)
+template <typename T>
+void set_item(PyObject * tuple, size_t pos, vector<T> const & val)
+{
+	PyObject * pyvec = PyTuple_New(val.size());
+	for (int i = 0; i < val.size(); ++i)
+		set_item(pyvec, i, val[i]);
+	PyTuple_SetItem(tuple, pos, pyvec);
+}
+
 
 namespace Private {
 
@@ -87,9 +161,27 @@ void test_tuple_set()
 	Py_DECREF(tuple);
 
 	PyObject * tuple2 = PyTuple_New(6);
-	tuple_set(tuple2, 101, 1001, 10002, 100002, 3, 12334);
+	tuple_set(tuple2, 101, 1001, 10002.0, 100002, 3.0f, 12334);
 	dump_tuple(tuple2);
 	Py_DECREF(tuple2);
+
+	PyObject * tuple3 = PyTuple_New(3);
+	string s = "hello";
+	char * cstr = "c-string";  // fires warning
+	tuple_set(tuple3, 1209, s, cstr);
+	dump_tuple(tuple3);
+	Py_DECREF(tuple3);
+
+	PyObject * tuple4 = PyTuple_New(3);
+	tuple_set(tuple4, string("hello"), 9977, "hello-c-string");
+	dump_tuple(tuple4);
+	Py_DECREF(tuple4);
+
+	PyObject * tuple5 = PyTuple_New(3);
+	vector<int> vec_data{100, 50, 25, 200, 400};
+	tuple_set(tuple5, "begin", vec_data, "end");
+	dump_tuple(tuple5);
+	Py_DECREF(tuple5);
 
 	Py_Finalize();
 }
