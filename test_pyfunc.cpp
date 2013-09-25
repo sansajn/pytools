@@ -5,48 +5,10 @@
 #include <vector>
 #include "tuple.hpp"
 #include "dump.hpp"
+#include "pyfunc.hpp"
 
 using std::cout;
 using std::vector;
-
-// toto je objekt s ktorým pracujem ako s funkciou, zvažiť
-// premenovanie na pyfunc
-class pyobj
-{
-public:
-	pyobj() : _obj(nullptr) {}
-	pyobj(PyObject * obj) : _obj(obj) {}
-
-	~pyobj() {
-		if (_obj)
-			Py_DECREF(_obj);
-		_obj = nullptr;
-	}
-
-	pyobj operator()() {
-		assert(PyCallable_Check(_obj) 
-			&& "logic-error: not callable python object");
-		PyObject * args = PyTuple_New(0);
-		PyObject * result = PyObject_CallObject(_obj, args);
-		Py_DECREF(args);
-		return pyobj(result);
-	}
-
-	template <typename T, typename ... Args>
-	pyobj operator()(T head, Args ... args)	{
-		assert(PyCallable_Check(_obj)
-			&& "logic-error: not callable python object");
-		PyObject * pyargs = PyTuple_New(1 + sizeof ... (Args));
-		tuple_set(pyargs, head, args ...);
-		PyObject * result = PyObject_CallObject(_obj, pyargs);
-		Py_DECREF(pyargs);
-		return pyobj(result);
-	}
-
-private:
-	PyObject * _obj;
-};
-
 
 void simple_call();
 void simple_call_with_arg();
@@ -79,7 +41,7 @@ void simple_call()
 	Py_DECREF(pName);
 
 	{
-	pyobj func(PyObject_GetAttrString(pModule, "simple_function"));
+	pyfunc func(PyObject_GetAttrString(pModule, "simple_function"));
 	func();
 	}
 
@@ -106,7 +68,7 @@ void simple_call_with_arg()
 	Py_DECREF(pName);
 
 	{
-	pyobj func(PyObject_GetAttrString(pModule, "call_integer_func"));
+	pyfunc func(PyObject_GetAttrString(pModule, "call_integer_func"));
 	func(101);
 	}
 
@@ -133,7 +95,7 @@ void simple_call_with_args()
 	Py_DECREF(pName);
 
 	{
-	pyobj func(PyObject_GetAttrString(pModule, "multiple_argument_call"));
+	pyfunc func(PyObject_GetAttrString(pModule, "multiple_argument_call"));
 	func(101, "1000001", 342.0f, 9829, 1234.0, 6780);
 	}
 
