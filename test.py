@@ -13,3 +13,23 @@ def simple_function():
 
 def call_integer_func(n):
 	print('arg:%d' % n)
+
+def multiple_argument_call(a, b, c, d, e, f, g, h):
+	print('multiple_argument_call(a, b, c, d, ...)')
+	#print(a, ':', type(a))
+	#print(b, ':', type(b))
+	#print(c, ':', type(c))
+	#print(d, ':', type(d))
+	print(a)
+	print(b)
+	print(c)
+	print(d)
+	if e != None:
+		print(e)
+	if f != None:
+		print(f)
+	if g != None:
+		print(g)
+	if h != None:
+		print(h)
+

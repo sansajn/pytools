@@ -1,25 +1,13 @@
 #include <Python.h>
 #include <cassert>
+#include <typeinfo>
 #include <iostream>
+#include <vector>
+#include "tuple.hpp"
+#include "dump.hpp"
 
 using std::cout;
-
-
-// tuple low level manipulators
-template <typename T>
-void set_item(PyObject * obj, T const & x, size_t pos);
-
-template <>
-void set_item<int>(PyObject * obj, int const & val, size_t pos)
-{
-	assert(PyTuple_CheckExact(obj) &&
-		"logic-error: not created as tuple object");
-
-	PyObject * arg = PyLong_FromLong(val);
-	PyTuple_SetItem(obj, pos, arg);
-	// arg nemusim uvolnovat, lebo SetItem je vlastnikom
-}
-
+using std::vector;
 
 // toto je objekt s ktorým pracujem ako s funkciou, zvažiť
 // premenovanie na pyfunc
@@ -44,13 +32,38 @@ public:
 		return pyobj(result);
 	}
 
-	pyobj operator()(int const & x) {
+	template <typename T>
+	pyobj operator()(T const & val) {
 		assert(PyCallable_Check(_obj)
 			&& "logic-error: not callable python object");
 		PyObject * args = PyTuple_New(1);
-		set_item(args, x, 0);
+		set_item(args, 0, val);
 		PyObject * result = PyObject_CallObject(_obj, args);
 		Py_DECREF(args);
+		return pyobj(result);
+	}
+
+
+	template <typename T, typename ... Args>
+	pyobj operator()(T head, Args ... args)	{
+		cout << "pyobj::operator()(Args ...)\n";
+		cout << "  sizeof ... (Args) = " << sizeof ... (Args) << "\n";
+		cout << "  1 + sizeof ... (Args) = " << 1 + sizeof ... (Args) << "\n";
+
+		assert(PyCallable_Check(_obj)
+			&& "logic-error: not callable python object");
+
+		size_t argc = 1 + sizeof ... (Args);
+		PyObject * pyargs = PyTuple_New(argc);
+
+// insert arguments
+		tuple_set(pyargs, head, args ...);
+
+		dump_tuple(pyargs);
+
+		PyObject * result = PyObject_CallObject(_obj, pyargs);
+		Py_DECREF(pyargs);
+
 		return pyobj(result);
 	}
 
@@ -61,12 +74,14 @@ private:
 
 void simple_call();
 void simple_call_with_arg();
+void simple_call_with_args();
 
 
 int main(int argc, char * argv[])
 {
 	simple_call();
 	simple_call_with_arg();
+	simple_call_with_args();
 	return 0;	
 }
 
@@ -117,6 +132,33 @@ void simple_call_with_arg()
 	{
 	pyobj func(PyObject_GetAttrString(pModule, "call_integer_func"));
 	func(101);
+	}
+
+	Py_DECREF(pModule);
+
+	Py_Finalize();
+}
+
+void simple_call_with_args()
+{
+	char const * module = "test";
+
+	Py_Initialize();
+	PyRun_SimpleString(
+		"import sys\n"
+		"sys.path.insert(0, '')\n");
+
+	PyObject * pName = PyUnicode_FromString(module);
+	assert(pName && "nepodarila sa konverzia na unicode string");
+
+	PyObject * pModule = PyImport_Import(pName);
+	assert(pModule && "nepodaril sa import python modulu");
+
+	Py_DECREF(pName);
+
+	{
+	pyobj func(PyObject_GetAttrString(pModule, "multiple_argument_call"));
+	func(101, 1000001, 342, 9829, 1234, 6780);
 	}
 
 	Py_DECREF(pModule);

@@ -1,11 +1,14 @@
+/* rutiny umoznujuce pracu s n-ticou */
 #include <Python.h>
 #include <string>
 #include <vector>
+#include <list>
 #include <iostream>
 #include "dump.hpp"
 
 using std::string;
 using std::vector;
+using std::list;
 using std::cout;
 
 
@@ -117,14 +120,32 @@ void set_item(PyObject * tuple, size_t pos, char const * val)
 	PyTuple_SetItem(tuple, pos, arg);
 }
 
-// toto je overloading (podpora pre vektory)
+
+//! \note toto zjednot pod hlavickou iterable (zatial netusim ako)
+
+// toto je overloading (podpora pre kontajnery)
 template <typename T>
 void set_item(PyObject * tuple, size_t pos, vector<T> const & val)
 {
-	PyObject * pyvec = PyTuple_New(val.size());
-	for (int i = 0; i < val.size(); ++i)
-		set_item(pyvec, i, val[i]);
-	PyTuple_SetItem(tuple, pos, pyvec);
+	PyObject * pycontainer = PyTuple_New(val.size());
+
+	size_t counter = 0;
+	for (auto & v : val)
+		set_item(pycontainer, counter++, v);
+
+	PyTuple_SetItem(tuple, pos, pycontainer);
+}
+
+template <typename T>
+void set_item(PyObject * tuple, size_t pos, list<T> const & val)
+{
+	PyObject * pycontainer = PyTuple_New(val.size());
+
+	size_t counter = 0;
+	for (auto & v : val)
+		set_item(pycontainer, counter++, v);
+
+	PyTuple_SetItem(tuple, pos, pycontainer);
 }
 
 
