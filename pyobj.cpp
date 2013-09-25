@@ -32,38 +32,14 @@ public:
 		return pyobj(result);
 	}
 
-	template <typename T>
-	pyobj operator()(T const & val) {
-		assert(PyCallable_Check(_obj)
-			&& "logic-error: not callable python object");
-		PyObject * args = PyTuple_New(1);
-		set_item(args, 0, val);
-		PyObject * result = PyObject_CallObject(_obj, args);
-		Py_DECREF(args);
-		return pyobj(result);
-	}
-
-
 	template <typename T, typename ... Args>
 	pyobj operator()(T head, Args ... args)	{
-		cout << "pyobj::operator()(Args ...)\n";
-		cout << "  sizeof ... (Args) = " << sizeof ... (Args) << "\n";
-		cout << "  1 + sizeof ... (Args) = " << 1 + sizeof ... (Args) << "\n";
-
 		assert(PyCallable_Check(_obj)
 			&& "logic-error: not callable python object");
-
-		size_t argc = 1 + sizeof ... (Args);
-		PyObject * pyargs = PyTuple_New(argc);
-
-// insert arguments
+		PyObject * pyargs = PyTuple_New(1 + sizeof ... (Args));
 		tuple_set(pyargs, head, args ...);
-
-		dump_tuple(pyargs);
-
 		PyObject * result = PyObject_CallObject(_obj, pyargs);
 		Py_DECREF(pyargs);
-
 		return pyobj(result);
 	}
 
@@ -158,7 +134,7 @@ void simple_call_with_args()
 
 	{
 	pyobj func(PyObject_GetAttrString(pModule, "multiple_argument_call"));
-	func(101, 1000001, 342, 9829, 1234, 6780);
+	func(101, "1000001", 342.0f, 9829, 1234.0, 6780);
 	}
 
 	Py_DECREF(pModule);
