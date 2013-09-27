@@ -11,10 +11,10 @@ inline void check_tuple_input(PyObject * obj, size_t pos)
 }
 
 template <typename R>
-R get_item(PyObject * obj, size_t pos);
+inline R get_item(PyObject * obj, size_t pos);
 
 template <>
-long get_item<long>(PyObject * obj, size_t pos)
+inline long get_item<long>(PyObject * obj, size_t pos)
 {
 	check_tuple_input(obj, pos);
 	PyObject * item = PyTuple_GetItem(obj, pos);
@@ -23,13 +23,13 @@ long get_item<long>(PyObject * obj, size_t pos)
 }
 
 template <>
-int get_item<int>(PyObject * obj, size_t pos)
+inline int get_item<int>(PyObject * obj, size_t pos)
 {
 	return int(get_item<long>(obj, pos));
 }
 
 template <>
-std::string get_item<std::string>(PyObject * obj, size_t pos)
+inline std::string get_item<std::string>(PyObject * obj, size_t pos)
 {
 	check_tuple_input(obj, pos);
 	PyObject * item = PyTuple_GetItem(obj, pos);
@@ -41,11 +41,8 @@ std::string get_item<std::string>(PyObject * obj, size_t pos)
 class pyresult
 {
 public:
-	pyresult(PyObject * result)
-		: _pos(0), _result(result)
-	{
-		assert(PyTuple_Check(_result) && "python-tuple expected");
-	}
+	pyresult(PyObject * result);
+	~pyresult();
 
 	template <typename T>
 	pyresult & operator>>(T & val)

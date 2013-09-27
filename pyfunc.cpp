@@ -1,5 +1,9 @@
 #include "pyfunc.hpp"
 
+#include <iostream>
+using std::cout;
+
+
 pyfunc::~pyfunc()
 {
 	if (_obj)
@@ -7,13 +11,65 @@ pyfunc::~pyfunc()
 	_obj = nullptr;
 }
 
-pyfunc pyfunc::operator()()
+pyresult pyfunc::operator()()
 {
 	assert(PyCallable_Check(_obj)
 		&& "logic-error: not callable python object");
-	PyObject * args = PyTuple_New(0);
-	PyObject * result = PyObject_CallObject(_obj, args);
-	Py_DECREF(args);
-	return pyfunc(result);
-}
+	PyObject * result = PyObject_CallObject(_obj, NULL);
 
+	// co to je ???
+	if (result == Py_None)
+	{
+		int dummy = 101;
+	}
+	else if (PyType_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyLong_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyBool_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyFloat_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyComplex_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyBytes_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyByteArray_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyUnicode_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyTuple_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyList_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PyDict_Check(result))
+	{
+		int dummy = 101;
+	}
+	else if (PySet_Check(result))
+	{
+		int dummy = 101;
+	}
+
+	return pyresult(result);
+}

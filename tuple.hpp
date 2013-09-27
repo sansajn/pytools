@@ -1,5 +1,5 @@
 /* infrastruktura vyvinuta v tuple_helper.cpp */
-
+#pragma once
 #include <Python.h>
 #include <list>
 #include <vector>
