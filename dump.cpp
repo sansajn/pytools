@@ -1,23 +1,14 @@
 #include "dump.hpp"
-#include <iostream>
-using std::cout;
 
 
-void dump_tuple(PyObject * tuple)
+std::ostream & operator<<(std::ostream & out, PyObject * py)
 {
-	assert(PyTuple_CheckExact(tuple)
-		&& "logic-error: nie je tuple objektom");
+	PyObject * repr = PyObject_Repr(py);
+	if (repr)
+		out << PyUnicode_AsUTF8(repr);
+	else
+		out << "unknown";
+	Py_DECREF(repr);
 
-	cout << "tuple:\n";
-
-	for (int i = 0; i < PyTuple_Size(tuple); ++i)
-	{
-		PyObject * elem = PyTuple_GetItem(tuple, i);
-		PyObject * repr = PyObject_Repr(elem);
-		if (repr)
-			cout << "  " << PyUnicode_AsUTF8(repr) << "\n";
-		else
-			cout << "  unknown object representation\n";
-		Py_DECREF(repr);
-	}
+	return out;
 }

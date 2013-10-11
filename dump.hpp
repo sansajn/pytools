@@ -1,4 +1,5 @@
 #pragma once
 #include <Python.h>
+#include <ostream>
 
-void dump_tuple(PyObject * tuple);
+std::ostream & operator<<(std::ostream & out, PyObject * py);

@@ -12,10 +12,12 @@ using std::cout;
 using std::vector;
 using std::string;
 
+// tests
 void simple_call();
 void simple_call_with_arg();
 void simple_call_with_args();
 void complex_return_call();
+void custom_arg();
 
 
 int main(int argc, char * argv[])
@@ -24,6 +26,7 @@ int main(int argc, char * argv[])
 	simple_call_with_arg();
 	simple_call_with_args();
 	complex_return_call();
+	custom_arg();
 	return 0;	
 }
 
@@ -140,4 +143,8 @@ void complex_return_call()
 	Py_DECREF(pModule);
 
 	Py_Finalize();
+}
+
+void custom_arg()
+{
 }
