@@ -1,0 +1,15 @@
+Volanie na jedno použitie modulu test, funkcie sin
+
+	double s;
+	call("test", "sin", 30.0) >> s;
+	cout << "sin(30.0):" << s << "\n";
+
+naj efektívnejšie volanie s funkcio ako parametrom
+
+	pymodule module("test");
+	pyfunc function = module("sin");
+	double s;
+	call(function, 30.0) >> s;
+	cout << "sin(30.0):" << s << "\n";
+
+viac možností volania v programoch 'test_py.cpp' a 'bench_call.cpp'.
