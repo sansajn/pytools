@@ -46,3 +46,6 @@ def list_return_complex():
 def sin(x):
 	return math.sin(math.degrees(x))
 
+def print_coordinates(coord):
+	print('lat:%g, lon:%g' % coord)
+

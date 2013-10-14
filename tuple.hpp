@@ -11,10 +11,19 @@ template <typename T>
 inline void tuple_at(PyObject * tuple, size_t pos, T const & val);
 
 template <>
+inline void tuple_at<PyObject *>(PyObject * tuple, size_t pos, PyObject * const & val)
+{
+	assert(PyTuple_CheckExact(tuple)
+		&& "logic-error: python tuple object expected");
+
+	PyTuple_SetItem(tuple, pos, val);
+}
+
+template <>
 inline void tuple_at<long>(PyObject * tuple, size_t pos, long const & val)
 {
-	assert(PyTuple_CheckExact(tuple) &&
-		"logic-error: not created as a tuple object");
+	assert(PyTuple_CheckExact(tuple)
+		&&	"logic-error: not created as a tuple object");
 
 	assert(pos < PyTuple_Size(tuple) && "logic-error: out of tuple range");
 

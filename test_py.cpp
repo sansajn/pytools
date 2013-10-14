@@ -43,6 +43,29 @@ void test_call_with_function_rvalue()
 	cout << "sin(30.0):" << s << "\n";
 }
 
+// custom type integration test
+struct coordinate
+{
+	float lat, lon;
+};
+
+void tuple_at(PyObject * tuple, size_t pos, coordinate const & val)
+{
+	PyObject * pycoord = PyTuple_New(2);
+	tuple_at(pycoord, 0, val.lat);
+	tuple_at(pycoord, 1, val.lon);
+	PyTuple_SetItem(tuple, pos, pycoord);
+}
+
+void test_custom_type()
+{
+	coordinate city_pos{14.2347, 48.1985};
+	call("test", "print_coordinates", city_pos);
+
+	// embedded call
+	call("test", "print_coordinates", coordinate{15.2347, 49.1985});
+}
+
 int main(int argc, char * argv[])
 {
 	test_oneshot_call();
@@ -50,5 +73,6 @@ int main(int argc, char * argv[])
 	test_call_with_function();
 	test_call_with_module_rvalue();
 	test_call_with_function_rvalue();
+	test_custom_type();
 	return 0;
 }
