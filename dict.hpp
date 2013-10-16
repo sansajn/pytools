@@ -1,35 +1,7 @@
 #pragma once
-#include <Python.h>
+#include "object.hpp"
 
 namespace py {
-
-template <typename T>
-inline PyObject * pytonize(T const & val);
-
-template <>
-inline PyObject * pytonize<long>(long const & val)
-{
-	return PyLong_FromLong(val);
-}
-
-template <>
-inline PyObject * pytonize<int>(int const & val)
-{
-	return pytonize<long>(val);
-}
-
-template <>
-inline PyObject * pytonize<double>(double const & val)
-{
-	return PyFloat_FromDouble(val);
-}
-
-template <>
-inline PyObject * pytonize<float>(float const & val)
-{
-	return pytonize<double>(val);
-}
-
 
 // mechanizmus pre list/tuple konverziu
 void as_list();
@@ -69,8 +41,8 @@ public:
 	template <typename K, typename V>
 	dict & operator<<(keyval<K, V> const & rhs)
 	{
-		PyObject * key = pytonize(rhs.key);
-		PyObject * val = pytonize(rhs.value);
+		PyObject * key = pythonize(rhs.key);
+		PyObject * val = pythonize(rhs.value);
 		PyDict_SetItem(_obj, key, val);
 		return *this;
 	}
