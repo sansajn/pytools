@@ -8,8 +8,10 @@ ccflags = '-std=c++11 -O0 -g'
 # pyresult
 env.Program('test_pyresult.cpp', CCFLAGS=ccflags)
 
+dump_obj = env.Object('dump.cpp', CCFLAGS=ccflags)
+
 # tuple utils
-env.Program('test_tuple.cpp', CCFLAGS=ccflags)
+env.Program(['test_tuple.cpp', dump_obj], CCFLAGS=ccflags)
 
 # pyfunc
 env.Program('test_pyfunc.cpp', CCFLAGS=ccflags)
@@ -30,4 +32,3 @@ env.Program('embedding.cpp', CCFLAGS=ccflags)
 env.Program('predef_aproach.cpp', CCFLAGS=ccflags)
 
 #env.Program('rtaproach.cpp', CCFLAGS=ccflags)
-#dump_obj = env.Object('dump.cpp', CCFLAGS=ccflags)

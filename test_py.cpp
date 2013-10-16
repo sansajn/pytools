@@ -51,10 +51,7 @@ struct coordinate
 
 void tuple_at(PyObject * tuple, size_t pos, coordinate const & val)
 {
-	PyObject * pycoord = PyTuple_New(2);
-	tuple_at(pycoord, 0, val.lat);
-	tuple_at(pycoord, 1, val.lon);
-	PyTuple_SetItem(tuple, pos, pycoord);
+	tuple_at(tuple, pos, py::tuple(2) << val.lat << val.lon);
 }
 
 void test_custom_type()

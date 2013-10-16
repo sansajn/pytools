@@ -154,3 +154,49 @@ inline void tuple_set(PyObject * tuple, T head, Tail ... tail)
 		"logic-error: not created as a tuple object");
 	Private::tuple_set_recursive(tuple, 0, head, tail ...);
 }
+
+namespace py {
+
+class tuple
+{
+public:
+	tuple(size_t elems)
+		: _pos(0)
+	{
+		_obj = PyTuple_New(elems);
+	}
+
+	template <typename T>
+	tuple & operator<<(T const & rhs)
+	{
+		assert(_pos < PyTuple_Size(_obj)
+			&& "logic-error: out of range (no space for another element)");
+		tuple_at<T>(_obj, _pos++, rhs);
+		return *this;
+	}
+
+	PyObject * native() const	{return _obj;}
+
+	// begin()
+	// end()
+
+private:
+	size_t _pos;
+	PyObject * _obj;
+};
+
+template <typename T>
+inline tuple to_tuple(std::vector<T> const & val)
+{
+	tuple t(val.size());
+	for (auto & v : val)
+		t << v;
+}
+
+};  // py
+
+template <>
+inline void tuple_at<py::tuple>(PyObject * tuple, size_t pos, py::tuple const & val)
+{
+	PyTuple_SetItem(tuple, pos, val.native());
+}

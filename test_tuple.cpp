@@ -5,23 +5,13 @@
 #include <list>
 #include <iostream>
 #include "tuple.hpp"
+#include "dump.hpp"
 
 using std::string;
 using std::vector;
 using std::list;
 using std::cout;
 
-std::ostream & operator<<(std::ostream & out, PyObject * py)
-{
-	PyObject * repr = PyObject_Repr(py);
-	if (repr)
-		out << PyUnicode_AsUTF8(repr);
-	else
-		out << "unknown";
-	Py_DECREF(repr);
-
-	return out;
-}
 
 void test_tuple_set()
 {
@@ -59,8 +49,24 @@ void test_tuple_set()
 	Py_Finalize();
 }
 
+void test_tuple_fill()
+{
+	Py_Initialize();
+
+	py::tuple t(3);
+	t << 101 << 101.101 << std::string("102");
+	cout << t.native() << "\n";
+
+	py::tuple u(3);
+	u << 111 << (py::tuple(2) << 17.32 << 49.48) << 112;
+	cout << u.native() << "\n";
+
+	Py_Finalize();
+}
+
 int main(int argc, char * argv[])
 {
 	test_tuple_set();
+	test_tuple_fill();
 	return 0;
 }
