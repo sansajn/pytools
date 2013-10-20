@@ -1,12 +1,23 @@
+import sys
+
 env = Environment()
-env['CXX'] = 'clang++'
 
-env.ParseConfig('pkg-config --cflags --libs python3')
+in_windows = sys.platform == 'win32'
 
-ccflags = '-std=c++11 -O0 -g'
+if in_windows:
+	ccflags = '/EHsc'
+	env.Append(CPPPATH = ['C:\\Python33\\include'])
+	env.Append(LIBPATH = ['C:\\Python33\\libs'])
+	env.Append(LIBS = ['python33.lib'])
+else:
+	env['CXX'] = 'clang++'
+	ccflags = '-std=c++11 -O0 -g'
+	env.ParseConfig('pkg-config --cflags --libs python3')
 
+	
 # pyresult
-env.Program('test_pyresult.cpp', CCFLAGS=ccflags)
+if not in_windows:
+	env.Program('test_pyresult.cpp', CCFLAGS=ccflags)
 
 dump_obj = env.Object('dump.cpp', CCFLAGS=ccflags)
 
@@ -37,3 +48,6 @@ env.Program('embedding.cpp', CCFLAGS=ccflags)
 env.Program('predef_aproach.cpp', CCFLAGS=ccflags)
 
 #env.Program('rtaproach.cpp', CCFLAGS=ccflags)
+
+
+
