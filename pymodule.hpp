@@ -1,6 +1,5 @@
 #pragma once
 #include <Python.h>
-#include <memory>
 #include <string>
 #include "pyfunc.hpp"
 

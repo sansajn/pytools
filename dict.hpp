@@ -3,11 +3,6 @@
 
 namespace py {
 
-// mechanizmus pre list/tuple konverziu
-void as_list();
-void as_tuple();
-
-
 // key-value map hepler (urcena k citaniu)
 template <typename K, typename V>
 struct keyval
