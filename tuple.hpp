@@ -201,12 +201,14 @@ public:
 		_obj = PyTuple_New(elems);
 	}
 
-	tuple(PyObject *& obj)
+	tuple(PyObject * obj)
 		: _gpos(0), _ppos(0)
 	{
 		_obj = obj;
-		obj = nullptr;
+		assert(obj && "logic-error: nulovy odkaz na objekt");
 	}
+
+	~tuple() {Py_DECREF(_obj);}
 
 	template <typename T>
 	tuple & operator<<(T const & rhs)
@@ -247,5 +249,6 @@ inline tuple to_tuple(std::vector<T> const & val)
 template <>
 inline void tuple_at<py::tuple>(PyObject * tuple, size_t pos, py::tuple const & val)
 {
+	Py_INCREF(val.native());
 	PyTuple_SetItem(tuple, pos, val.native());
 }
