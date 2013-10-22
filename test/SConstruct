@@ -14,12 +14,15 @@ else:
 	ccflags = '-std=c++11 -O0 -g'
 	env.ParseConfig('pkg-config --cflags --libs python3')
 
+env.Append(CPPPATH = './../')
+
+# py
+dump_obj = env.Object('../dump.cpp', CCFLAGS=ccflags)
+pymodule_obj = env.Object('../pymodule.cpp', CCFLAGS=ccflags)
 	
 # pyresult
 if not in_windows:
 	env.Program('test_pyresult.cpp', CCFLAGS=ccflags)
-
-dump_obj = env.Object('dump.cpp', CCFLAGS=ccflags)
 
 # tuple
 env.Program(['test_tuple.cpp', dump_obj], CCFLAGS=ccflags)
@@ -28,7 +31,6 @@ env.Program(['test_tuple.cpp', dump_obj], CCFLAGS=ccflags)
 env.Program('test_pyfunc.cpp', CCFLAGS=ccflags)
 
 # pymodule
-pymodule_obj = env.Object('pymodule.cpp', CCFLAGS=ccflags)
 env.Program(['test_pymodule.cpp', pymodule_obj], CCFLAGS=ccflags)
 
 # py
@@ -43,9 +45,12 @@ env.Program(['test_dict.cpp', dump_obj], CCFLAGS=ccflags)
 # object
 env.Program(['test_object.cpp', dump_obj], CCFLAGS=ccflags)
 
+# native
+#env.Program(['test_native.cpp'], CCFLAGS=ccflags)
+
 # develop veci
-env.Program('embedding.cpp', CCFLAGS=ccflags)
-env.Program('predef_aproach.cpp', CCFLAGS=ccflags)
+env.Program('../embedding.cpp', CCFLAGS=ccflags)
+env.Program('../predef_aproach.cpp', CCFLAGS=ccflags)
 
 #env.Program('rtaproach.cpp', CCFLAGS=ccflags)
 
