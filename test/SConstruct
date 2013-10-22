@@ -20,12 +20,12 @@ env.Append(CPPPATH = './../')
 dump_obj = env.Object('../dump.cpp', CCFLAGS=ccflags)
 pymodule_obj = env.Object('../pymodule.cpp', CCFLAGS=ccflags)
 	
+# tuple
+env.Program(['test_tuple.cpp', dump_obj], CCFLAGS=ccflags)
+
 # pyresult
 if not in_windows:
 	env.Program('test_pyresult.cpp', CCFLAGS=ccflags)
-
-# tuple
-env.Program(['test_tuple.cpp', dump_obj], CCFLAGS=ccflags)
 
 # pyfunc
 env.Program('test_pyfunc.cpp', CCFLAGS=ccflags)

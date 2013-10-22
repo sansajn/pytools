@@ -64,9 +64,27 @@ void test_tuple_fill()
 	Py_Finalize();
 }
 
+void tuple_read()
+{
+	Py_Initialize();
+
+	py::tuple t(3);
+	t << 101 << 101.101 << std::string("102");
+
+	int i;
+	double d;
+	std::string s;
+	t >> i >> d >> s;
+
+	assert(i == 101 && d == 101.101 && s == "102"	&& "ziskane data su nekorektne");
+
+	cout << "i:" << i << ", d:" << d << ", s:" << s << "\n";
+}
+
 int main(int argc, char * argv[])
 {
 	test_tuple_set();
 	test_tuple_fill();
+	tuple_read();
 	return 0;
 }

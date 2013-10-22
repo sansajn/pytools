@@ -10,6 +10,9 @@
 template <typename T>
 inline void tuple_at(PyObject * tuple, size_t pos, T const & val);
 
+template <typename R>
+inline R tuple_at(PyObject * tuple, size_t pos);
+
 template <>
 inline void tuple_at<PyObject *>(PyObject * tuple, size_t pos, PyObject * const & val)
 {
@@ -35,9 +38,23 @@ inline void tuple_at<long>(PyObject * tuple, size_t pos, long const & val)
 }
 
 template <>
+inline long tuple_at<long>(PyObject * tuple, size_t pos)
+{
+	PyObject * o = PyTuple_GetItem(tuple, pos);
+	assert(PyLong_Check(o) && "objekt na pozicii nie je typu long");
+	return PyLong_AsLong(o);
+}
+
+template <>
 inline void tuple_at<int>(PyObject * tuple, size_t pos, int const & val)
 {
 	tuple_at<long>(tuple, pos, val);
+}
+
+template <>
+inline int tuple_at<int>(PyObject * tuple, size_t pos)
+{
+	return static_cast<int>(tuple_at<long>(tuple, pos));
 }
 
 template <>
@@ -56,9 +73,23 @@ inline void tuple_at<double>(PyObject * tuple, size_t pos, double const & val)
 }
 
 template <>
+inline double tuple_at<double>(PyObject * tuple, size_t pos)
+{
+	PyObject * o = PyTuple_GetItem(tuple, pos);
+	assert(PyFloat_Check(o) && "objekt na pozicii nie je typu float");
+	return PyFloat_AsDouble(o);
+}
+
+template <>
 inline void tuple_at<float>(PyObject * tuple, size_t pos, float const & val)
 {
 	tuple_at<double>(tuple, pos, val);
+}
+
+template <>
+inline float tuple_at<float>(PyObject * tuple, size_t pos)
+{
+	return static_cast<float>(tuple_at<double>(tuple, pos));
 }
 
 template <>
@@ -76,8 +107,17 @@ inline void tuple_at<std::string>(PyObject * tuple, size_t pos, std::string cons
 	PyTuple_SetItem(tuple, pos, arg);
 }
 
+template <>
+inline std::string tuple_at<std::string>(PyObject * tuple, size_t pos)
+{
+	PyObject * o = PyTuple_GetItem(tuple, pos);
+	assert(PyUnicode_Check(o) && "objekt na pozicii nie je typu unicode");
+	return std::string(PyUnicode_AsUTF8(o));
+}
+
 // pretazenie pre c-stringy
-inline void tuple_at(PyObject * tuple, size_t pos, char * val)
+// TODO: toto sa da spravit ako pretzenie sablon (pozri result/pythonize)
+inline void tuple_at(PyObject * tuple, size_t pos, char const * val)
 {
 	assert(PyTuple_CheckExact(tuple) &&
 		"logic-error: not created as a tuple object");
@@ -91,18 +131,9 @@ inline void tuple_at(PyObject * tuple, size_t pos, char * val)
 	PyTuple_SetItem(tuple, pos, arg);
 }
 
-inline void tuple_at(PyObject * tuple, size_t pos, char const * val)
+inline void tuple_at(PyObject * tuple, size_t pos, char * val)
 {
-	assert(PyTuple_CheckExact(tuple) &&
-		"logic-error: not created as a tuple object");
-
-	assert(pos < PyTuple_Size(tuple) && "logic-error: out of tuple range");
-
-	PyObject * arg = PyUnicode_DecodeUTF8(val, strlen(val), NULL);
-
-	assert(arg && "logic-error: nepodarila sa konverzia na python objekt");
-
-	PyTuple_SetItem(tuple, pos, arg);
+	tuple_at(tuple, pos, const_cast<char const *>(val));
 }
 
 
@@ -133,6 +164,8 @@ inline void tuple_at(PyObject * tuple, size_t pos, std::list<T> const & val)
 	PyTuple_SetItem(tuple, pos, pycontainer);
 }
 
+// tuple set implementation
+
 namespace Private {
 
 inline void tuple_set_recursive(PyObject * tuple, size_t pos) {}
@@ -155,33 +188,49 @@ inline void tuple_set(PyObject * tuple, T head, Tail ... tail)
 	Private::tuple_set_recursive(tuple, 0, head, tail ...);
 }
 
+
 namespace py {
 
+//! Tuple abstraction.
 class tuple
 {
 public:
 	tuple(size_t elems)
-		: _pos(0)
+		: _gpos(0), _ppos(0)
 	{
 		_obj = PyTuple_New(elems);
+	}
+
+	tuple(PyObject *& obj)
+		: _gpos(0), _ppos(0)
+	{
+		_obj = obj;
+		obj = nullptr;
 	}
 
 	template <typename T>
 	tuple & operator<<(T const & rhs)
 	{
-		assert(_pos < PyTuple_Size(_obj)
+		assert(_gpos < PyTuple_Size(_obj)
 			&& "logic-error: out of range (no space for another element)");
-		tuple_at<T>(_obj, _pos++, rhs);
+		tuple_at<T>(_obj, _gpos++, rhs);
+		return *this;
+	}
+
+	template <typename T>
+	tuple & operator>>(T & rhs)
+	{
+		assert(_ppos < PyTuple_Size(_obj)
+			&& "logic-error: out of range (there isn't another element)");
+		rhs = tuple_at<T>(_obj, _ppos++);
 		return *this;
 	}
 
 	PyObject * native() const	{return _obj;}
 
-	// begin()
-	// end()
-
 private:
-	size_t _pos;
+	size_t _gpos;  // get-pos
+	size_t _ppos;  // set-pos
 	PyObject * _obj;
 };
 
