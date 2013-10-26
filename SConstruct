@@ -46,7 +46,7 @@ env.Program(['test/test_dict.cpp', dump_obj], CCFLAGS=ccflags)
 env.Program(['test/test_object.cpp', dump_obj], CCFLAGS=ccflags)
 
 # native
-#env.Program(['test_native.cpp'], CCFLAGS=ccflags)
+env.Program(['test/test_native.cpp', 'native.cpp'], CCFLAGS=ccflags)
 
 # develop veci
 env.Program('embedding.cpp', CCFLAGS=ccflags)
