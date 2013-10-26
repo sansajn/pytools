@@ -205,6 +205,7 @@ public:
 		: _gpos(0), _ppos(0)
 	{
 		_obj = obj;
+		Py_INCREF(_obj);
 		assert(obj && "logic-error: nulovy odkaz na objekt");
 	}
 
